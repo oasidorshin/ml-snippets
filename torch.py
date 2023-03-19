@@ -1,6 +1,7 @@
 import torch
 import os, random
 import numpy as np
+from tqdm import tqdm
 
 
 def setup_everything():
@@ -49,3 +50,48 @@ def deterministic_dataloader(seed):
 # Sigmoid func
 def sigmoid(x):
     return 1 / (1 + torch.exp(-x))
+
+
+# Boilerplate model class
+class BaseModel(nn.Module):
+    def __init__(self, device):
+        super(BaseModel, self).__init__()
+
+        self.model = timm.create_model("model_name", pretrained=False)
+        self.model.fc = nn.Linear(1024, 10)
+
+        self.device = device
+        self.model.to(device)
+
+    def forward(self, x):
+        x = self.model(x)
+        return x
+
+    def load_weights(self, weights_path):
+        self.model.load_state_dict(torch.load(weights_path))
+
+    def save_weights(self, weights_path):
+        torch.save(self.model.state_dict(), weights_path)
+
+    def train_epoch(self, train_loader, loss_fn, optimizer):
+        self.model.train()
+
+        for X, target in tqdm(train_loader):
+            X, target = X.to(self.device), target.to(self.device)
+            optimizer.zero_grad()
+            output = self.model(X)
+            loss = loss_fn(output, target)
+            loss.backward()
+            optimizer.step()
+
+    def eval_epoch(self, valid_loader):
+        self.model.eval()
+
+        preds_arr = []
+        with torch.no_grad():
+            for X, target in tqdm(valid_loader):
+                X, target = X.to(self.device), target.to(self.device)
+                preds = sigmoid(self.model(X))
+                preds_arr.append(preds.detach().cpu().numpy())
+
+        return np.concatenate(preds_arr)
