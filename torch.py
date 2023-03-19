@@ -44,3 +44,8 @@ def deterministic_dataloader(seed):
     g.manual_seed(seed)
 
     return seed_worker, g
+
+
+# Sigmoid func
+def sigmoid(x):
+    return 1 / (1 + torch.exp(-x))
