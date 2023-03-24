@@ -24,6 +24,10 @@ def setup_everything():
     
     # Setup visible devices
     os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2"
+
+    # tf32
+    #torch.set_float32_matmul_precision("high") # tf32
+    #torch.set_float32_matmul_precision("highest") # pure fp32
     
 
 """
@@ -95,3 +99,17 @@ class BaseModel(nn.Module):
                 preds_arr.append(preds.detach().cpu().numpy())
 
         return np.concatenate(preds_arr)
+
+
+# Compile in 2.0
+torch._dynamo.reset()
+compiled_model = torch.compile(model, mode="max-autotune")
+
+
+# AMP
+preds_arr = []
+with torch.no_grad(), torch.amp.autocast(device, enabled=True):
+    for X, target in tqdm(valid_loader):
+        X, target = X.to(self.device), target.to(self.device)
+        preds = sigmoid(self.model(X))
+        preds_arr.append(preds.detach().cpu().numpy())
