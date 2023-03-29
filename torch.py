@@ -113,3 +113,7 @@ with torch.no_grad(), torch.amp.autocast(device, enabled=True):
         X, target = X.to(self.device), target.to(self.device)
         preds = sigmoid(self.model(X))
         preds_arr.append(preds.detach().cpu().numpy())
+
+        
+# CPU launch blocking
+#os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
