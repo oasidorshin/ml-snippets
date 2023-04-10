@@ -102,7 +102,11 @@ class BaseModel(nn.Module):
 
 
 # Compile in 2.0
-torch._dynamo.reset()
+try:
+    torch._dynamo.reset()
+    print("Dynamo reset")
+except:
+    pass
 compiled_model = torch.compile(model, mode="max-autotune")
 
 
