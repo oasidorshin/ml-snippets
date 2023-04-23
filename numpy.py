@@ -20,3 +20,7 @@ def bootstrap_twosample(targets, preds, alphas, n_trials, metric):
         right = np.percentile(results, 100 * (1 - (alpha / 2.)))
         
         print(f"{int((1-alpha)*100)}% bootstrap CI: ({left:.4f}, {right:.4f})")
+        
+        
+def generate_random_image(h, w, c=3):
+    return np.random.randint(low=0, high=255, size=(h, w, c), dtype=np.uint8)
